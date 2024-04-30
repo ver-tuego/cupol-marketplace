@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Магазин</title>
+  <link rel="stylesheet" href="{{ css_style }}"> <!-- Подключаем файл стилей -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Подключаем Bootstrap CSS -->
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="#">Название сайта</a>
+    <form class="form-inline mx-auto">
+      <input class="form-control mr-sm-2" type="search" id="searchQuery" placeholder="Поиск" aria-label="Search">
+      <button class="btn btn-outline-dark my-2 my-sm-0" type="submit" onclick="search(event)">Поиск</button>
+    </form>
+    {% if current_user.is_authenticated %}
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link custom-cart-btn" href="#">Корзина</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link custom-account-btn" href="#">Аккаунт</a>
+        </li>
+      </ul>
+    {% else %}
+      <p>
+          <a class="btn btn btn-outline-dark" href="/register">Зарегистрироваться</a>
+          <a class="btn btn btn-outline-dark" href="/login">Войти</a>
+      </p>
+    {% endif %}
+  </div>
+</nav>
+
+{% block content %}{% endblock %}

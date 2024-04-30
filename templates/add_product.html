@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+{% if is_not_buyer %}
+  <div class="container">
+    <h2 class="mt-4 mb-4">Вы не продавец</h2>
+  </div>
+{% elif current_user.is_authenticated %}
+  <div class="container">
+    <h2 class="mt-4 mb-4">Добавление нового товара</h2>
+
+    <form action="/submit-product" method="post" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="product_name">Название товара:</label>
+        <input type="text" class="form-control" id="product_name" name="product_name" required>
+      </div>
+      <div class="form-group">
+        <label for="product_price">Цена товара:</label>
+        <input type="number" class="form-control" id="product_price" name="product_price" required>
+      </div>
+      <div class="form-group">
+        <label for="product_quanity">Количество на складе:</label>
+        <input type="number" class="form-control" id="product_quanity" name="product_quanity" required>
+      </div>
+      <div class="form-group">
+        <label for="product_description">Описание товара:</label>
+        <textarea class="form-control" id="product_description" name="product_description" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="product_images">Фотографии товара:</label>
+        <input type="file" class="form-control-file" id="product_images" name="product_images" multiple required>
+      </div>
+      <button type="submit" class="btn btn-outline-dark">Добавить товар</button>
+    </form>
+  </div>
+
+  <script>
+      function search(event) {
+          event.preventDefault();
+
+          // Получаем значение из строки ввода
+          var query = document.getElementById('searchQuery').value;
+
+          // Формируем URL с параметром запроса
+          var url = "/search/" + encodeURIComponent(query);
+          // Перенаправляем пользователя на эту страницу
+          window.location.href = url;
+      }
+  </script>
+{% else %}
+  <div class="container">
+      <h2 class="mt-4 mb-4">Вы не авторизованы</h2>
+  </div>
+{% endif %}
+{% endblock %}
