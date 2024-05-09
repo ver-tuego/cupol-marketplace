@@ -12,7 +12,7 @@ from data.seller import Seller
 from data.admin import Admin
 from forms.register import RegisterForm
 from forms.login import LoginForm
-from flask_login import LoginManager, login_user, login_required
+from flask_login import LoginManager, login_user, login_required, logout_user
 from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review
 from difflib import SequenceMatcher
 
@@ -33,7 +33,6 @@ def get_photos_from_id(id, mode):
         arr = list(map(lambda x: f'static/photos/{mode}/{id}/{x}', arr))
         return arr
     except Exception as ex:
-        print(ex)
         return []
 
 
@@ -41,6 +40,19 @@ def get_photos_from_id(id, mode):
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    redirect('/')
+
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    email = request.form.get('email')
+    print(email)
+    return jsonify({'message': 'Вы успешно подписались!'}), 200
 
 
 @app.route('/')
@@ -129,7 +141,6 @@ def submit_product():
     if seller_id in sellers_ids:
         new_product(seller_id, name, description, price, quanity)
         latest_product = db_sess.query(Product).order_by(Product.id.desc()).first().id
-        print(latest_product)
         if not os.path.exists(f'static/photos/products/{latest_product}'):
             os.makedirs(f'static/photos/products/{latest_product}')
         if any(photos):
@@ -146,7 +157,7 @@ def submit_product():
 @app.route('/load-more', methods=['GET'])
 def load_more():
     db_sess = db_session.create_session()
-    products = db_sess.query(Product).all()
+    products = db_sess.query(Product).all() * 5
     start = int(request.args.get('start'))
     limit = int(request.args.get('limit'))
     new_products = products[start:start + limit]
@@ -176,7 +187,6 @@ def load_more_search():
     for i in new_products:
         data.append({'id': i.id, 'name': i.name, 'image': get_photos_from_id(i.id, 'products')[0], 'price': i.price,
                      'rating': i.rating})
-    print(data)
     return jsonify(data)
 
 
@@ -215,7 +225,6 @@ def product(product_id):
                     'rating': product.rating,
                     'photos': get_photos_from_id(product_id, 'products')}
     }
-    print(params)
     return render_template('product.html', **params)
 
 

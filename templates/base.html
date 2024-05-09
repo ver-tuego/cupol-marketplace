@@ -34,4 +34,100 @@
   </div>
 </nav>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.10/SmoothScroll.min.js" integrity="sha256-huW7yWl7tNfP7lGk46XE+Sp0nCotjzYodhVKlwaNeco=" crossorigin="anonymous"></script>
+<script>
+  SmoothScroll({
+  // Время скролла 400 = 0.4 секунды
+  animationTime : 1000,
+  // Размер шага в пикселях
+  stepSize : 75,
+
+  // Дополнительные настройки:
+
+  // Ускорение
+  accelerationDelta : 45,
+  // Максимальное ускорение
+  accelerationMax : 2,
+
+  // Поддержка клавиатуры
+  keyboardSupport : true,
+  // Шаг скролла стрелками на клавиатуре в пикселях
+  arrowScroll : 50,
+
+  // Pulse (less tweakable)
+  // ratio of "tail" to "acceleration"
+  pulseAlgorithm : true,
+  pulseScale : 4,
+  pulseNormalize : 1,
+
+  // Поддержка тачпада
+  touchpadSupport : true,
+  })
+</script>
+
 {% block content %}{% endblock %}
+
+<footer class="footer bg-dark text-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Контакты</h5>
+                <p>Телефон: +7 (XXX) XXX-XX-XX</p>
+                <p>Email: info@example.com</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Полезные ссылки</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#">Главная</a></li>
+                    <li><a href="#">О нас</a></li>
+                    <li><a href="#">Услуги</a></li>
+                    <li><a href="#">Контакты</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Подписаться</h5>
+                <form id="subscribeForm">
+                    <div class="form-group">
+                        <input type="email" class="form-control" id="emailInput" placeholder="Введите ваш email" required>
+                    </div>
+                    <button type="submit" class="btn btn-light" id="subscribeBtn">Подписаться</button>
+                </form>
+                </form>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <p>&copy; 2024 Ваше название компании. Все права защищены.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('subscribeForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+
+        // Получаем значение email из поля ввода
+        var email = document.getElementById('emailInput').value;
+
+        // Создаем объект FormData и добавляем в него значение email
+        var formData = new FormData();
+        formData.append('email', email);
+
+        // Отправляем данные на сервер с помощью AJAX
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/subscribe', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Выводим сообщение об успешной подписке
+                alert('Вы успешно подписались!');
+            } else if (xhr.readyState === 4 && xhr.status !== 200) {
+                // Выводим сообщение об ошибке при подписке
+                alert('Произошла ошибка при подписке. Пожалуйста, попробуйте снова.');
+            }
+        };
+        xhr.send(formData); // Отправляем FormData на сервер
+    });
+});
+</script>
