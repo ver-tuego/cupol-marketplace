@@ -118,7 +118,7 @@ def submit_review():
         return render_template('add_review.html', **params)
     for i in photos:
         if i.filename.split('.')[-1] not in ('png', 'jpg', 'bmp', 'jpeg'):
-            return
+            return redirect('/')
 
     new_review(product_id, current_user.id, int(rating), review_text)
     db_sess = db_session.create_session()
@@ -175,7 +175,7 @@ def submit_product():
         if any(photos):
             for i in photos:
                 if i.filename.split('.')[-1] not in ('png', 'jpg', 'bmp', 'jpeg'):
-                    return
+                    return redirect('/')
             for photo in range(len(photos)):
                 photos[photo].save(os.path.join(f'static/photos/products/{latest_product}', f'{photo}.png'))
         return redirect('/')
@@ -322,4 +322,4 @@ new_admin("Матвей", "Верташов", "matvey@mail.ru", "123", "male", 1
 """
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port='3555', debug=False)

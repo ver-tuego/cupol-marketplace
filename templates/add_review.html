@@ -29,7 +29,7 @@
                 </div>
                 <div class="form-group">
                     <label for="photos">Приложить фото:</label>
-                    <input type="file" class="form-control-file" id="photos" name="photos" accept=".png,.jpg,.bmp,.jpeg" multiple >
+                    <input type="file" onchange="checkFiles(this)" class="form-control-file" id="photos" name="photos" accept=".png,.jpg,.bmp,.jpeg" multiple >
                 </div>
                 <input type="hidden" id="product_id" name="product_id">
                 <button type="submit" class="btn btn-outline-dark">Отправить</button>
@@ -47,6 +47,15 @@
 
             // Заполнение скрытого поля формы с product_id
             document.getElementById('product_id').value = product_id;
+        </script>
+
+        <script>
+            function checkFiles(input) {
+                if (input.files.length > 4) {
+                    alert("Максимальное количество файлов для загрузки - 4");
+                    input.value = '';
+                }
+            }
         </script>
     </body>
 {% else %}
