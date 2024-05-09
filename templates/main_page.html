@@ -71,18 +71,6 @@ document.getElementsByClassName('nav-link custom-account-btn')[0].addEventListen
 });
 </script>
 
-<script>
-    function search(event) {
-        event.preventDefault();
-        // Получаем значение из строки ввода
-        var query = document.getElementById('searchQuery').value;
-
-        // Формируем URL с параметром запроса
-        var url = "/search/" + encodeURIComponent(query);
-        // Перенаправляем пользователя на эту страницу
-        window.location.href = url;
-    }
-</script>
 </body>
 </html>
 {% endblock %}

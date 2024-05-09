@@ -4,6 +4,15 @@
   border-bottom: 4px gray solid;
 }
 
+body {
+    display: flex
+    flex-direction: column;
+}
+
+.content {
+    flex-grow: 1;
+}
+
 .navbar-brand {
   margin-right: 2rem; /* Увеличить отступ справа для названия сайта */
 }
@@ -83,4 +92,12 @@
 
 #reviewsCarousel .carousel-item img {
   margin-top: 27px; /* или другое значение, на ваш выбор */
+}
+
+.github-link {
+    margin-bottom: 10px;
+}
+
+footer {
+    height: 250px;
 }

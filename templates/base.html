@@ -11,7 +11,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container">
-    <a class="navbar-brand" href="#">Название сайта</a>
+    <a class="navbar-brand" href="/">Cupol`s marketplace</a>
     <form class="form-inline mx-auto">
       <input class="form-control mr-sm-2" type="search" id="searchQuery" placeholder="Поиск" aria-label="Search">
       <button class="btn btn-outline-dark my-2 my-sm-0" type="submit" onclick="search(event)">Поиск</button>
@@ -22,7 +22,7 @@
           <a class="nav-link custom-cart-btn" href="#">Корзина</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link custom-account-btn" href="#">Аккаунт</a>
+          <a class="nav-link custom-account-btn" href="#">{{ current_user.email }}</a>
         </li>
       </ul>
     {% else %}
@@ -72,16 +72,14 @@
         <div class="row">
             <div class="col-md-4">
                 <h5>Контакты</h5>
-                <p>Телефон: +7 (XXX) XXX-XX-XX</p>
-                <p>Email: info@example.com</p>
+                <p>Телефон: 555-0134</p>
+                <p>Email: cupolmarketplace@yandex.ru</p>
             </div>
             <div class="col-md-4">
                 <h5>Полезные ссылки</h5>
                 <ul class="list-unstyled">
-                    <li><a href="#">Главная</a></li>
-                    <li><a href="#">О нас</a></li>
-                    <li><a href="#">Услуги</a></li>
-                    <li><a href="#">Контакты</a></li>
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/about_us">О нас</a></li>
                 </ul>
             </div>
             <div class="col-md-4">
@@ -97,7 +95,7 @@
         </div>
         <div class="row mt-4">
             <div class="col-md-12 text-center">
-                <p>&copy; 2024 Ваше название компании. Все права защищены.</p>
+                <p>&copy; 2023-2024 Cupol company. Все права защищены.</p>
             </div>
         </div>
     </div>
@@ -130,4 +128,18 @@ document.addEventListener('DOMContentLoaded', function() {
         xhr.send(formData); // Отправляем FormData на сервер
     });
 });
+</script>
+
+<script>
+    function search(event) {
+        event.preventDefault();
+        // Получаем значение из строки ввода
+        var query = document.getElementById('searchQuery').value;
+        // Формируем URL с параметром запроса
+        var url = "/search/" + encodeURIComponent(query);
+        // Перенаправляем пользователя на эту страницу
+        if (query != "") {
+            window.location.href = url;
+        }
+    }
 </script>

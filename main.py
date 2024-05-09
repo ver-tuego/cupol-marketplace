@@ -45,7 +45,15 @@ def load_user(user_id):
 @app.route('/logout')
 def logout():
     logout_user()
-    redirect('/')
+    return redirect('/')
+
+
+@app.route('/about_us')
+def about_us():
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css')
+    }
+    return render_template('about_us.html', **params)
 
 
 @app.route('/subscribe', methods=['POST'])
@@ -68,12 +76,23 @@ def main_page():
 @app.route('/add_review/<product_id>')
 def add_review(product_id):
     current_user = flask_login.current_user
-    user_id = current_user.id
+    try:
+        user_id = current_user.id
+    except Exception:
+        params = {
+            'is_not_buyer': True,
+            'product_exist': True,
+            'css_style': url_for('static', filename='css/main_page.css')
+        }
+        return render_template('add_review.html', **params)
     db_sess = db_session.create_session()
+    products_ids = db_sess.query(Product).all()
+    products_ids = [prd.id for prd in products_ids]
     buyers_ids = db_sess.query(Buyer).all()
     buyers_ids = [buyer.id for buyer in buyers_ids]
     params = {
         'is_not_buyer': user_id not in buyers_ids,
+        'products_exists': product_id in products_ids,
         'css_style': url_for('static', filename='css/main_page.css')
     }
     return render_template('add_review.html', **params)
@@ -113,7 +132,14 @@ def submit_review():
 @app.route('/add_product')
 def add_product():
     current_user = flask_login.current_user
-    seller_id = current_user.id
+    try:
+        seller_id = current_user.id
+    except Exception:
+        params = {
+            'is_not_seller': True,
+            'css_style': url_for('static', filename='css/main_page.css')
+        }
+        return render_template('add_product.html', **params)
     db_sess = db_session.create_session()
     sellers_ids = db_sess.query(Seller).all()
     sellers_ids = [seller.id for seller in sellers_ids]
@@ -157,7 +183,7 @@ def submit_product():
 @app.route('/load-more', methods=['GET'])
 def load_more():
     db_sess = db_session.create_session()
-    products = db_sess.query(Product).all() * 5
+    products = db_sess.query(Product).all()
     start = int(request.args.get('start'))
     limit = int(request.args.get('limit'))
     new_products = products[start:start + limit]
