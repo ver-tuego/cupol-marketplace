@@ -95,7 +95,6 @@ def add_review(product_id):
         'products_not_exists': int(product_id) not in products_ids,
         'css_style': url_for('static', filename='css/main_page.css')
     }
-    print(params)
     return render_template('add_review.html', **params)
 
 
@@ -117,6 +116,9 @@ def submit_review():
             'css_style': url_for('static', filename='css/main_page.css')
         }
         return render_template('add_review.html', **params)
+    for i in photos:
+        if i.filename.split('.')[-1] not in ('png', 'jpg', 'bmp', 'jpeg'):
+            return
 
     new_review(product_id, current_user.id, int(rating), review_text)
     db_sess = db_session.create_session()
@@ -171,6 +173,9 @@ def submit_product():
         if not os.path.exists(f'static/photos/products/{latest_product}'):
             os.makedirs(f'static/photos/products/{latest_product}')
         if any(photos):
+            for i in photos:
+                if i.filename.split('.')[-1] not in ('png', 'jpg', 'bmp', 'jpeg'):
+                    return
             for photo in range(len(photos)):
                 photos[photo].save(os.path.join(f'static/photos/products/{latest_product}', f'{photo}.png'))
         return redirect('/')
