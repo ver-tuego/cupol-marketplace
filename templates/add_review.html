@@ -1,18 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<style>
-    footer {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        height: 250px;
-    }
-</style>
 {% if is_not_buyer %}
   <div class="container">
     <h2 class="mt-4 mb-4">Вы не покупатель</h2>
   </div>
-{% elif not product_exists %}
+{% elif product_not_exists %}
   <div class="container">
     <h2 class="mt-4 mb-4">Такого продукта не существует</h2>
   </div>

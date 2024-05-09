@@ -89,12 +89,13 @@ def add_review(product_id):
     products_ids = db_sess.query(Product).all()
     products_ids = [prd.id for prd in products_ids]
     buyers_ids = db_sess.query(Buyer).all()
-    buyers_ids = [buyer.id for buyer in buyers_ids]
+    buyers_ids = [int(buyer.id) for buyer in buyers_ids]
     params = {
         'is_not_buyer': user_id not in buyers_ids,
-        'products_exists': product_id in products_ids,
+        'products_not_exists': int(product_id) not in products_ids,
         'css_style': url_for('static', filename='css/main_page.css')
     }
+    print(params)
     return render_template('add_review.html', **params)
 
 
