@@ -27,6 +27,15 @@ def similar(p1, p2):
     return SequenceMatcher(None, p1, p2).ratio()
 
 
+def count_average(query):
+    summary = 0
+    counter = 0
+    for i in query:
+        summary += i.rating
+        counter += 1
+    return round(summary / counter, 2)
+
+
 def get_photos_from_id(id, mode):
     try:
         arr = os.listdir(f'static/photos/{mode}/{id}')
@@ -59,7 +68,6 @@ def about_us():
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     email = request.form.get('email')
-    print(email)
     return jsonify({'message': 'Вы успешно подписались!'}), 200
 
 
@@ -116,9 +124,6 @@ def submit_review():
             'css_style': url_for('static', filename='css/main_page.css')
         }
         return render_template('add_review.html', **params)
-    for i in photos:
-        if i.filename.split('.')[-1] not in ('png', 'jpg', 'bmp', 'jpeg'):
-            return redirect('/')
 
     new_review(product_id, current_user.id, int(rating), review_text)
     db_sess = db_session.create_session()
@@ -126,8 +131,15 @@ def submit_review():
     if not os.path.exists(f'static/photos/reviews/{latest_review}'):
         os.makedirs(f'static/photos/reviews/{latest_review}')
     if any(photos):
+        for i in photos:
+            if i.filename.split('.')[-1] not in ('png', 'jpg', 'bmp', 'jpeg'):
+                return redirect('/')
         for photo in range(len(photos)):
             photos[photo].save(os.path.join(f'static/photos/reviews/{latest_review}', f'{photo}.png'))
+    average_reviews = count_average(db_sess.query(Review).filter(Review.product_id == product_id).all())
+    db_product = db_sess.query(Product).filter(Product.id == product_id).first()
+    db_product.rating = average_reviews
+    db_sess.commit()
     return redirect('/')
 
 

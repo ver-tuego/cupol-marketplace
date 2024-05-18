@@ -4,7 +4,7 @@
   <div class="row">
     <div class="col-md-6">
       <!-- Карусель с фотографиями товара -->
-      <div id="carouselExampleIndicators" data-interval="false" class="carousel slide" data-ride="carousel">
+      <div id="ProductCarousel" data-interval="false" class="carousel slide" data-ride="carousel">
         <div class="carousel-inner">
         {% for item in product.photos %}
           {% if loop.first %}
@@ -18,11 +18,11 @@
         {% endif %}
     {% endfor %}
         </div>
-        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+        <a class="carousel-control-prev" href="#ProductCarousel" role="button" data-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
           <span class="sr-only">Previous</span>
         </a>
-        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <a class="carousel-control-next" href="#ProductCarousel" role="button" data-slide="next">
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
           <span class="sr-only">Next</span>
         </a>
@@ -32,7 +32,7 @@
       <!-- Информация о товаре -->
       <h2>{{ product.name }}</h2>
       <p>Производитель: {{ product.seller_name }}</p>
-      <p>Описание: {{ product.description }}</p>
+      <p class="limited-width-paragraph">Описание: {{ product.description }}</p>
       <p>Цена: {{ product.price }} ₽</p>
       <p>Рейтинг: {{ product.rating }}★</p>
       <button class="btn btn-outline-dark">В корзину</button>

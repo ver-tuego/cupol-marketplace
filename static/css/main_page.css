@@ -25,13 +25,13 @@ body {
 .card {
   width: 100%; /* Сделать карточку товара на 100% шире */
   margin-bottom: 30px; /* Увеличить отступ между карточками по вертикали */
-  height: 350px; /* Увеличить размер карточек по вертикали */
+  height: 400px; /* Увеличить размер карточек по вертикали */
 }
 
 .card-img-top {
-  width: 100%;
-  height: 50%; /* Высота изображения составляет половину высоты карточки */
-  object-fit: cover; /* Масштабирование изображения, чтобы оно полностью заполняло блок */
+    width: 320px;
+    height: 180px;
+    object-fit: cover; /* Это свойство будет обрезать изображение, чтобы заполнить указанные размеры */
 }
 
 .card-title,
@@ -90,8 +90,26 @@ body {
   right: -5%;
 }
 
+#reviewsCarousel .carousel-item {
+  max-height: 380px; /* Ограничьте высоту карусели */
+  overflow: hidden; /* Скрыть содержимое, выходящее за пределы */
+}
+
+
 #reviewsCarousel .carousel-item img {
-  margin-top: 27px; /* или другое значение, на ваш выбор */
+  width: 100%; /* Убедитесь, что изображение масштабируется по ширине */
+  height: auto; /* Сохраняйте пропорции изображения */
+  margin-top: 35px;
+}
+
+#ProductCarousel .carousel-item {
+  max-height: 380px; /* Ограничьте высоту карусели */
+  overflow: hidden; /* Скрыть содержимое, выходящее за пределы */
+}
+
+#ProductCarousel .carousel-item img {
+  width: 100%; /* Убедитесь, что изображение масштабируется по ширине */
+  height: auto; /* Сохраняйте пропорции изображения */
 }
 
 .github-link {
@@ -101,4 +119,23 @@ body {
 footer {
     height: 250px;
     margin-top: 50px;
+}
+
+.custom-container {
+  margin-top: 50px;
+}
+.author-name {
+  font-weight: bold;
+  font-size: 24px;
+}
+.about-me {
+  margin-top: 20px;
+}
+.github-link {
+  margin-top: 20px;
+}
+
+.limited-width-paragraph {
+  max-width: 900px; /* Установите максимальную ширину абзаца */
+  word-wrap: break-word; /* Обеспечьте перенос слов */
 }
