@@ -14,35 +14,13 @@ from forms.register import RegisterForm
 from forms.login import LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user
 from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review
-from difflib import SequenceMatcher
+from tools import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 tokens = []
-
-
-def similar(p1, p2):
-    return SequenceMatcher(None, p1, p2).ratio()
-
-
-def count_average(query):
-    summary = 0
-    counter = 0
-    for i in query:
-        summary += i.rating
-        counter += 1
-    return round(summary / counter, 2)
-
-
-def get_photos_from_id(id, mode):
-    try:
-        arr = os.listdir(f'static/photos/{mode}/{id}')
-        arr = list(map(lambda x: f'static/photos/{mode}/{id}/{x}', arr))
-        return arr
-    except Exception as ex:
-        return []
 
 
 @login_manager.user_loader
