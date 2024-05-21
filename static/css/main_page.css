@@ -1,4 +1,3 @@
-/* Основные стили */
 .navbar{
   border-width: 2px;
   border-bottom: 4px gray solid;
@@ -51,7 +50,6 @@ body {
   margin-left: -5px; /* Сдвигаем содержимое карточки влево */
 }
 
-/* Дополнительные стили для сдвига влево */
 .container {
   padding-left: 0; /* Убираем внутренний отступ слева */
   padding-right: 0; /* Убираем внутренний отступ справа */
@@ -91,25 +89,25 @@ body {
 }
 
 #reviewsCarousel .carousel-item {
-  max-height: 380px; /* Ограничьте высоту карусели */
-  overflow: hidden; /* Скрыть содержимое, выходящее за пределы */
+  max-height: 380px; /* Ограничиваем высоту карусели */
+  overflow: hidden; /* Скрываем содержимое, выходящее за пределы */
 }
 
 
 #reviewsCarousel .carousel-item img {
-  width: 100%; /* Убедитесь, что изображение масштабируется по ширине */
-  height: auto; /* Сохраняйте пропорции изображения */
+  width: 100%;
+  height: auto;
   margin-top: 35px;
 }
 
 #ProductCarousel .carousel-item {
-  max-height: 380px; /* Ограничьте высоту карусели */
-  overflow: hidden; /* Скрыть содержимое, выходящее за пределы */
+  max-height: 380px; /* Ограничиваем высоту карусели */
+  overflow: hidden; /* Скрываем содержимое, выходящее за пределы */
 }
 
 #ProductCarousel .carousel-item img {
-  width: 100%; /* Убедитесь, что изображение масштабируется по ширине */
-  height: auto; /* Сохраняйте пропорции изображения */
+  width: 100%;
+  height: auto;
 }
 
 .github-link {
@@ -136,6 +134,23 @@ footer {
 }
 
 .limited-width-paragraph {
-  max-width: 900px; /* Установите максимальную ширину абзаца */
+  max-width: 900px; /* Установка максимальной ширины абзаца */
   word-wrap: break-word; /* Обеспечьте перенос слов */
+}
+
+.product-image {
+    width: 150px !important;
+    height: 150px !important;
+    object-fit: cover;
+}
+.product-container {
+    max-height: 300px; /* Задаем высоту контейнера */
+    overflow-y: auto; /* Добавляем вертикальную прокрутку */
+}
+.product-item {
+    border: 1px solid #ccc; /* Рамка для товаров */
+    padding: 10px; /* Внутренний отступ */
+    margin-bottom: 20px; /* Устанавливаем отступ между товарами */
+    display: flex;
+    align-items: center;
 }

@@ -2,6 +2,7 @@ import os
 
 import flask_login
 import requests
+from sqlalchemy import and_
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 from data import db_session
 from data.product import Product
@@ -9,11 +10,12 @@ from data.review import Review
 from data.user import User
 from data.buyer import Buyer
 from data.seller import Seller
+from data.basket import Basket
 from data.admin import Admin
 from forms.register import RegisterForm
 from forms.login import LoginForm
 from flask_login import LoginManager, login_user, login_required, logout_user
-from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review
+from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review, new_basket
 from tools import *
 
 app = Flask(__name__)
@@ -56,6 +58,54 @@ def main_page():
         'css_style': url_for('static', filename='css/main_page.css')
     }
     return render_template('main_page.html', **params)
+
+
+@app.route('/basket', methods=['GET'])
+def get_basket():
+    current_user = flask_login.current_user
+    user_id = current_user.id
+    basket_data = {
+        "items": [],
+        "total": 0
+    }
+    db_sess = db_session.create_session()
+    products = db_sess.query(Basket).filter(Basket.buyer_id == user_id)
+    for i in products:
+        prd = db_sess.query(Product).filter(Product.id == i.product_id).first()
+        bask_str = db_sess.query(Basket).filter(
+            and_(Basket.product_id == i.product_id, Basket.buyer_id == user_id)).first()
+        basket_data['items'].append({
+            'image': get_photos_from_id(i.product_id, 'products')[0],
+            'name': prd.name,
+            'price': prd.price,
+            'quantity': bask_str.quantity
+        })
+    basket_data['total'] = sum([int(i['price']) for i in basket_data['items']])
+    return jsonify(basket_data)
+
+
+@app.route('/basket_add', methods=['POST'])
+def basket_add():
+    current_user = flask_login.current_user
+    try:
+        product_id = request.form['product']
+        user_id = current_user.id
+        db_sess = db_session.create_session()
+
+        data = db_sess.query(Basket).all()
+        users_ids = [usr.buyer_id for usr in data]
+        products_ids = [prd.product_id if prd.buyer_id == user_id else None for prd in data]
+        if int(user_id) in users_ids and int(product_id) in products_ids:
+            db_basket_product = db_sess.query(Basket).filter(
+                and_(Basket.product_id == product_id, Basket.buyer_id == user_id)).first()
+            db_basket_product.quantity += 1
+            db_sess.commit()
+        else:
+            new_basket(user_id, product_id, 1)
+        return jsonify({'message': 'Данные успешно обновлены!'}), 200
+    except Exception as ex:
+        print(ex)
+        return jsonify({'error': str(ex)}), 500
 
 
 @login_required
@@ -192,7 +242,10 @@ def load_more():
 
 @app.route('/cart')
 def cart():
-    return render_template('cart.html')
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css')
+    }
+    return render_template('cart.html', **params)
 
 
 # Маршрут для загрузки дополнительных карточек товаров при поиске
