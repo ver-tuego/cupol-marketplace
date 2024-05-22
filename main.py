@@ -80,8 +80,24 @@ def get_basket():
             'price': prd.price,
             'quantity': bask_str.quantity
         })
-    basket_data['total'] = sum([int(i['price']) for i in basket_data['items']])
+    basket_data['total'] = sum([int(i['price']) * int(i['quantity']) for i in basket_data['items']])
     return jsonify(basket_data)
+
+
+@app.route('/payment', methods=['POST'])
+def process_payment():
+    current_user = flask_login.current_user
+    user_id = current_user.id
+    db_sess = db_session.create_session()
+    products = db_sess.query(Basket).filter(Basket.buyer_id == user_id).all()
+    for i in products:
+        product = db_sess.query(Product).filter(Product.id == i.product_id).first()
+        # product.selling += i.quantity
+        product.quantity -= i.quantity
+    for row in products:
+        db_sess.delete(row)
+    db_sess.commit()
+    return '', 200
 
 
 @app.route('/basket_add', methods=['POST'])
@@ -98,7 +114,8 @@ def basket_add():
         if int(user_id) in users_ids and int(product_id) in products_ids:
             db_basket_product = db_sess.query(Basket).filter(
                 and_(Basket.product_id == product_id, Basket.buyer_id == user_id)).first()
-            db_basket_product.quantity += 1
+            product_to_by = db_sess.query(Product).filter(Product.id == product_id).first()
+            db_basket_product.quantity = min(db_basket_product.quantity + 1, product_to_by.quantity)
             db_sess.commit()
         else:
             new_basket(user_id, product_id, 1)

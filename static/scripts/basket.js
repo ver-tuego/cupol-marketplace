@@ -32,8 +32,29 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('totalAmount').textContent = total;
     }
 
-    fetchBasketItems();
+    function handlePayment() {
+        fetch('/payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => {
+            if (response.ok) {
+                // Очищаем корзину после успешного платежа
+                const basketContainer = document.getElementById('basketItemsContainer');
+                basketContainer.innerHTML = '';
+                updateTotalAmount(0);
+                alert('Оплата прошла успешно');
+            } else {
+                console.error('Payment failed:', response.statusText);
+            }
+        })
+        .catch(error => console.error('Error during payment:', error));
+    }
 
-    document.getElementById('checkoutButton').addEventListener('click', function() {
-    });
+    document.getElementById('checkoutButton').addEventListener('click', handlePayment);
+
+    fetchBasketItems();
 });
