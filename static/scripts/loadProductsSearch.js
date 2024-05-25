@@ -22,7 +22,7 @@ fetch(`/load-more-search?start=${start}&limit=${limit}&query=${query}`)
             <h5 class="card-title">${product.name}</h5>
             <p class="card-price">Цена: ${product.price}₽</p>
             <p class="card-rating">★${product.rating}</p>
-            <a href="/product/${product.id}" class="btn btn-dark btn-primary">Подробнее</a> <!-- Кнопка "Подробнее" -->
+            <a href="/product/${product.id}" class="btn btn-dark btn-primary btn-animated">Подробнее</a> <!-- Кнопка "Подробнее" -->
           </div>
         </div>
       `;

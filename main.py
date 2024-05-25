@@ -111,13 +111,15 @@ def basket_add():
         data = db_sess.query(Basket).all()
         users_ids = [usr.buyer_id for usr in data]
         products_ids = [prd.product_id if prd.buyer_id == user_id else None for prd in data]
+        product_to_by = db_sess.query(Product).filter(Product.id == product_id).first()
         if int(user_id) in users_ids and int(product_id) in products_ids:
             db_basket_product = db_sess.query(Basket).filter(
                 and_(Basket.product_id == product_id, Basket.buyer_id == user_id)).first()
-            product_to_by = db_sess.query(Product).filter(Product.id == product_id).first()
             db_basket_product.quantity = min(db_basket_product.quantity + 1, product_to_by.quantity)
             db_sess.commit()
         else:
+            if product_to_by.quantity == 0:
+                return jsonify({'message': 'Продукта нет на складе'}), 400
             new_basket(user_id, product_id, 1)
         return jsonify({'message': 'Данные успешно обновлены!'}), 200
     except Exception as ex:
@@ -323,20 +325,23 @@ def product(product_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css')
+    }
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Пароли не совпадают")
+                                   message="Пароли не совпадают", **params)
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Указанная почта занята")
+                                   message="Указанная почта занята", **params)
         if not 14 < form.age.data < 200:
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Недопустимый возраст")
+                                   message="Недопустимый возраст", **params)
         if form.type.data == "buyer":
             user = new_buyer(form.name.data, form.surname.data, form.email.data, form.password.data,
                              form.gender.data, form.age.data)
@@ -346,12 +351,15 @@ def register():
         db_sess.add(user)
         login_user(db_sess.query(User).get(user.id))
         return redirect('/')
-    return render_template('register.html', title='Регистрация', form=form)
+    return render_template('register.html', title='Регистрация', form=form, **params)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css')
+    }
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
@@ -361,8 +369,8 @@ def login():
                 return redirect("/")
         return render_template('login.html',
                                message="Неправильный логин или пароль",
-                               form=form)
-    return render_template('login.html', title='Авторизация', form=form)
+                               form=form, **params)
+    return render_template('login.html', title='Авторизация', form=form, **params)
 
 
 db_session.global_init("db/db.db")

@@ -35,7 +35,7 @@
       <p class="limited-width-paragraph">Описание: {{ product.description }}</p>
       <p>Цена: {{ product.price }} ₽</p>
       <p>Рейтинг: {{ product.rating }}★</p>
-      <button id="addButton" class="btn btn-outline-dark">В корзину</button>
+      <button id="addButton" class="btn btn-outline-dark btn-animated">В корзину</button>
     </div>
   </div>
 </div>
@@ -44,7 +44,7 @@
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Отзывы о товаре</h3>
-    <a href="/add_review/{{ product.id }}" class="btn btn-outline-dark">Оставить отзыв</a>
+    <a href="/add_review/{{ product.id }}" class="btn btn-outline-dark btn-animated">Оставить отзыв</a>
   </div>
   {% if reviews|length > 0%}
     <div id="reviewsCarousel" data-interval="false" class="carousel slide" data-ride="carousel">
