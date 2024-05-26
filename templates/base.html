@@ -22,7 +22,7 @@
           <a class="nav-link custom-cart-btn" href="/cart">Корзина</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link custom-account-btn" href="/account">{{ current_user.email }}</a>
+          <a class="nav-link custom-account-btn" href="/account">{{ current_user.get_user().name }} {{ current_user.get_user().surname }}</a>
         </li>
       </ul>
     {% else %}

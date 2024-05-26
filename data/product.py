@@ -14,7 +14,8 @@ class Product(SqlAlchemyBase, SerializerMixin):
     description = sqlalchemy.Column(sqlalchemy.String)
     price = sqlalchemy.Column(sqlalchemy.Float)
     quantity = sqlalchemy.Column(sqlalchemy.Integer)
-    rating = sqlalchemy.Column(sqlalchemy.Float, default=0)
+    rating = sqlalchemy.Column(sqlalchemy.Float, default=0.0)
+    number_of_purchases = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
 
     seller = orm.relationship("Seller")

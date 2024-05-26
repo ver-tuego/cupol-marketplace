@@ -1,10 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>АККАУНТ</h1>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{user.surname}} {{user.name}}</h1>
+    <h3>
+        {% if current_user.type == "buyer" %}
+            Покупатель
+        {% elif current_user.type == "seller" %}
+            Продавец
+        {% elif current_user.type == "admin" %}
+            {% if user.is_boss == False %}
+                Админ
+            {% else %}
+                Главный админ
+            {% endif %}
+        {% endif %}
+    </h3>
+    Почта: {{current_user.email}}<br>
+    {% if user.gender == "male" %}
+        Пол: мужской
+    {% else %}
+        Пол: женский
+    {% endif %}<br>
+    Возраст: {{user.age}}<br>
+    {% if current_user.type == "seller" %}
+        Рейтинг: {{user.rating}}
+    {% endif %}
+    Дата создания аккаунта: {{user.date}}<br>
+    <a class="btn btn-outline-warning" href="/account/edit">Изменить</a>
+    <a class="btn btn-outline-danger" href="/account/delete">Удалить</a>
+    <br>
+    <a class="btn btn-outline-primary" href="/account/leave">Выйти</a>
+{% endblock %}

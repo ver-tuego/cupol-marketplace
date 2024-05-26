@@ -11,6 +11,5 @@ class Basket(SqlAlchemyBase, SerializerMixin):
     buyer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("buyer.id"))
     product_id = sqlalchemy.Column(sqlalchemy.Integer)
     quantity = sqlalchemy.Column(sqlalchemy.Integer)
-    is_bought = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     buyer = orm.relationship("Buyer")

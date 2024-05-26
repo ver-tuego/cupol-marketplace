@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if current_user.type == "admin" %}
+        <h1 align="center">Продавцы</h1>
+        <table border="2px solid grey">
+            <tr>
+                <th bgcolor="#b3b3b3">ID</th>
+                <th bgcolor="#b3b3b3">Имя</th>
+                <th bgcolor="#b3b3b3">Фамилия</th>
+                <th bgcolor="#b3b3b3">Почта</th>
+                <th bgcolor="#b3b3b3">Пол</th>
+                <th bgcolor="#b3b3b3">Возраст</th>
+                <th bgcolor="#b3b3b3">Рейтинг</th>
+                <th bgcolor="#b3b3b3">Дата создания</th>
+                <th bgcolor="#b3b3b3">Назначить админом</th>
+                <th bgcolor="#b3b3b3">Удалить</th>
+            </tr>
+            {% for i in sellers %}
+                <tr>
+                    <td align="center">{{ i.id }}</td>
+                    <td align="center">{{ i.name }}</td>
+                    <td align="center">{{ i.surname }}</td>
+                    <td align="center">{{ i.email }}</td>
+                    <td align="center">
+                        {% if i.gender == "male" %}
+                            Мужской
+                        {% else %}
+                            Женский
+                        {% endif %}
+                    </td>
+                    <td align="center">{{ i.age }}</td>
+                    <td align="center">{{ i.rating }}</td>
+                    <td align="center">{{ i.date }}</td>
+                    <td align="center">
+                        <a class="btn btn-outline-success" href="/admin/give_admin/{{i.id}}">Назначить админом</a>
+                    </td>
+                    <td align="center">
+                        <a class="btn btn-outline-danger" href="/admin/delete/{{i.id}}">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <h1 align="center">У вас нет прав для доступа к данной странице</h1>
+    {% endif %}
+{% endblock %}

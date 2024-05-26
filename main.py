@@ -1,6 +1,5 @@
 import os
 
-import flask_login
 import requests
 from sqlalchemy import and_
 from flask import Flask, render_template, redirect, url_for, jsonify, request
@@ -14,7 +13,8 @@ from data.basket import Basket
 from data.admin import Admin
 from forms.register import RegisterForm
 from forms.login import LoginForm
-from flask_login import LoginManager, login_user, login_required, logout_user
+from forms.edit import EditForm
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review, new_basket
 from tools import *
 
@@ -53,7 +53,6 @@ def subscribe():
 
 @app.route('/')
 def main_page():
-    current_user = flask_login.current_user
     params = {
         'css_style': url_for('static', filename='css/main_page.css')
     }
@@ -62,7 +61,6 @@ def main_page():
 
 @app.route('/basket', methods=['GET'])
 def get_basket():
-    current_user = flask_login.current_user
     user_id = current_user.id
     basket_data = {
         "items": [],
@@ -86,7 +84,6 @@ def get_basket():
 
 @app.route('/payment', methods=['POST'])
 def process_payment():
-    current_user = flask_login.current_user
     user_id = current_user.id
     db_sess = db_session.create_session()
     products = db_sess.query(Basket).filter(Basket.buyer_id == user_id).all()
@@ -102,7 +99,6 @@ def process_payment():
 
 @app.route('/basket_add', methods=['POST'])
 def basket_add():
-    current_user = flask_login.current_user
     try:
         product_id = request.form['product']
         user_id = current_user.id
@@ -130,7 +126,6 @@ def basket_add():
 @login_required
 @app.route('/add_review/<product_id>')
 def add_review(product_id):
-    current_user = flask_login.current_user
     try:
         user_id = current_user.id
     except Exception:
@@ -156,7 +151,6 @@ def add_review(product_id):
 @login_required
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
-    current_user = flask_login.current_user
     user_id = current_user.id
     db_sess = db_session.create_session()
     buyers_ids = db_sess.query(Buyer).all()
@@ -193,7 +187,6 @@ def submit_review():
 @login_required
 @app.route('/add_product')
 def add_product():
-    current_user = flask_login.current_user
     try:
         seller_id = current_user.id
     except Exception:
@@ -215,7 +208,6 @@ def add_product():
 @login_required
 @app.route('/submit-product', methods=['POST'])
 def submit_product():
-    current_user = flask_login.current_user
     photos = request.files.getlist('product_images')
     seller_id = current_user.id
     name = request.form['product_name']
@@ -284,14 +276,8 @@ def load_more_search():
     return jsonify(data)
 
 
-@app.route('/account')
-def account():
-    return render_template('account.html')
-
-
 @app.route('/search/<query>')
 def search_result(query):
-    current_user = flask_login.current_user
     params = {
         'css_style': url_for('static', filename='css/main_page.css')
     }
@@ -300,15 +286,24 @@ def search_result(query):
 
 @app.route('/product/<product_id>')
 def product(product_id):
-    current_user = flask_login.current_user
     db_sess = db_session.create_session()
     reviews = db_sess.query(Review).filter(Review.product_id == product_id).all()
     product = db_sess.query(Product).filter(Product.id == product_id).first()
+    print(product.seller_id)
     seller = db_sess.query(Seller).filter(Seller.id == product.seller_id).first()
     reviews_info = []
     for i in reviews:
-        reviews_info.append({'username': db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().name,
-                             'rating': i.rating, 'text': i.text, 'photos': get_photos_from_id(i.id, 'reviews')})
+        try:
+            user = (f"{db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().name} "
+                    f"{db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().surname}")
+        except Exception as err:
+            user = "DELETED"
+        reviews_info.append(
+            {'username': user,
+             'rating': i.rating,
+             'text': i.text,
+             'photos': get_photos_from_id(i.id, 'reviews')
+             })
 
     params = {
         'css_style': url_for('static', filename='css/main_page.css'),
@@ -373,12 +368,169 @@ def login():
     return render_template('login.html', title='Авторизация', form=form, **params)
 
 
+@app.route('/account')
+def account():
+    user = current_user.get_user()
+    return render_template('account.html', user=user)
+
+
+@app.route('/account/edit', methods=['GET', 'POST'])
+@login_required
+def edit_account():
+    form = EditForm()
+    if request.method == "GET":
+        user = current_user.get_user()
+        form.name.data = user.name
+        form.surname.data = user.surname
+        form.email.data = user.email
+        form.password.data = user.password
+        form.gender.data = user.gender
+        form.age.data = user.age
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('edit.html', title='Изменение аккаунта',
+                                   form=form,
+                                   message="Пароли не совпадают")
+        if not 14 < form.age.data < 200:
+            return render_template('edit.html', title='Изменение аккаунта',
+                                   form=form,
+                                   message="Недопустимый возраст")
+        db_sess = db_session.create_session()
+        user = current_user.get_user()
+        user.name = form.name.data
+        user.surname = form.surname.data
+        user.email = form.email.data
+        user.set_password(form.password.data)
+        user.gender = form.gender.data
+        user.age = form.age.data
+        user_ = db_sess.query(User).get(current_user.id)
+        user_.email = form.email.data
+        db_sess.commit()
+        return redirect('/account')
+    return render_template('edit.html', title='Изменение аккаунта', form=form)
+
+
+@app.route('/account/delete')
+@login_required
+def delete_account():
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(current_user.id)
+    user_ = user.get_user(db_sess)
+    db_sess.delete(user)
+    db_sess.delete(user_)
+    db_sess.commit()
+    return redirect('/')
+
+
+@app.route('/account/leave')
+@login_required
+def leave_account():
+    logout_user()
+    return redirect('/')
+
+
+@app.route('/admin/list_of_buyers')
+def list_of_buyers():
+    db_sess = db_session.create_session()
+    buyers = db_sess.query(Buyer).all()
+    user = current_user.get_user()
+    return render_template("list_of_buyers.html", buyers=buyers, user=user)
+
+
+@app.route('/admin/list_of_sellers')
+def list_of_sellers():
+    db_sess = db_session.create_session()
+    sellers = db_sess.query(Seller).all()
+    user = current_user.get_user()
+    return render_template("list_of_sellers.html", sellers=sellers, user=user)
+
+
+@app.route('/admin/list_of_admins')
+def list_of_admins():
+    db_sess = db_session.create_session()
+    admins = db_sess.query(Admin).all()
+    user = current_user.get_user()
+    return render_template("list_of_admins.html", admins=admins, user=user)
+
+
+@app.route('/admin/delete/<int:id>')
+def delete_account_for_admin(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(id)
+    type = user.type
+    user_ = user.get_user(db_sess)
+    db_sess.add(user_)
+    db_sess.delete(user)
+    db_sess.delete(user_)
+    db_sess.commit()
+    return redirect(f'/admin/list_of_{type}s')
+
+
+@app.route('/admin/give_admin/<int:id>')
+def give_admin(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(id)
+    type = user.type
+    user_ = user.get_user(db_sess)
+    id = user_.id
+    name = user_.name
+    surname = user_.surname
+    email = user_.email
+    password = user_.password
+    gender = user_.gender
+    age = user_.age
+    date = user_.date
+    db_sess.delete(user_)
+    admin = Admin()
+    admin.id = id
+    admin.name = name
+    admin.surname = surname
+    admin.email = email
+    admin.set_password(password)
+    admin.gender = gender
+    admin.age = age
+    admin.date = date
+    db_sess.add(admin)
+    user.type = "admin"
+    db_sess.commit()
+    return redirect(f'/admin/list_of_{type}s')
+
+
+@app.route('/admin/give_buyer/<int:id>')
+def give_buyer(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(id)
+    user_ = user.get_user(db_sess)
+    id = user_.id
+    name = user_.name
+    surname = user_.surname
+    email = user_.email
+    password = user_.password
+    gender = user_.gender
+    age = user_.age
+    date = user_.date
+    db_sess.delete(user_)
+    buyer = Buyer()
+    buyer.id = id
+    buyer.name = name
+    buyer.surname = surname
+    buyer.email = email
+    buyer.set_password(password)
+    buyer.gender = gender
+    buyer.age = age
+    buyer.date = date
+    db_sess.add(buyer)
+    user.type = "buyer"
+    db_sess.commit()
+    return redirect('/admin/list_of_admins')
+
+
 db_session.global_init("db/db.db")
 
-"""
-new_product(5, "Сармат", "Настоящий", 999999999999.99, 1, "")
 
-new_review(1, 5, "Реально настоящий")
+new_product(2, "Сармат", "Настоящий", 999999999999.99, 1)
+
+new_review(1, 1, 5, "Реально настоящий")
 
 new_buyer("Покупатель", "С фамилией", "buyer@mail.ru", "buyer", "male", 19)
 
@@ -387,7 +539,7 @@ new_seller("Продавец", "Без фамилией", "seller@mail.ru", "sel
 new_admin("Дмитрий", "Кривошея", "krivosheya_da@mail.ru", "03092008", "male", 15, True)
 new_admin("Сармат", "Сакиев", "sarmat@mail.ru", "hard_password", "male", 16, True)
 new_admin("Матвей", "Верташов", "matvey@mail.ru", "123", "male", 16, True)
-"""
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port='3555', debug=False)

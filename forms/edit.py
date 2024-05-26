@@ -3,9 +3,7 @@ from wtforms import PasswordField, StringField, SubmitField, EmailField, Integer
 from wtforms.validators import DataRequired
 
 
-class RegisterForm(FlaskForm):
-    type = RadioField("Зарегистрироваться как:", choices=[("buyer", "Покупатель"), ("seller", "Продавец")],
-                      validators=[DataRequired()])
+class EditForm(FlaskForm):
     name = StringField('Имя:', validators=[DataRequired()])
     surname = StringField('Фамилия:', validators=[DataRequired()])
     email = EmailField('Почтовый адрес:', validators=[DataRequired()])
@@ -13,4 +11,4 @@ class RegisterForm(FlaskForm):
     password_again = PasswordField('Повторите пароль:', validators=[DataRequired()])
     gender = RadioField("Пол:", choices=[("male", "Мужской"), ("female", "Женский")], validators=[DataRequired()])
     age = IntegerField('Возраст:', validators=[DataRequired()])
-    submit = SubmitField('Зарегистрироваться')
+    submit = SubmitField('Сохранить')
