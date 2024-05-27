@@ -1,5 +1,6 @@
 import os
 
+import flask_login
 import requests
 from sqlalchemy import and_
 from flask import Flask, render_template, redirect, url_for, jsonify, request
@@ -29,12 +30,6 @@ tokens = []
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
-
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return redirect('/')
 
 
 @app.route('/about_us')
@@ -253,6 +248,17 @@ def load_more():
 
 @app.route('/cart')
 def cart():
+    db_sess = db_session.create_session()
+    current_user = flask_login.current_user
+    user_id = current_user.id
+    buyers_ids = db_sess.query(Buyer).all()
+    buyers_ids = [buyer.id for buyer in buyers_ids]
+    if user_id not in buyers_ids:
+        params = {
+            'is_not_buyer': True,
+            'css_style': url_for('static', filename='css/main_page.css')
+        }
+        return render_template('add_review.html', **params)
     params = {
         'css_style': url_for('static', filename='css/main_page.css')
     }
@@ -526,7 +532,7 @@ def give_buyer(id):
 
 
 db_session.global_init("db/db.db")
-
+'''
 
 new_product(2, "Сармат", "Настоящий", 999999999999.99, 1)
 
@@ -539,7 +545,7 @@ new_seller("Продавец", "Без фамилией", "seller@mail.ru", "sel
 new_admin("Дмитрий", "Кривошея", "krivosheya_da@mail.ru", "03092008", "male", 15, True)
 new_admin("Сармат", "Сакиев", "sarmat@mail.ru", "hard_password", "male", 16, True)
 new_admin("Матвей", "Верташов", "matvey@mail.ru", "123", "male", 16, True)
-
+'''
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port='3555', debug=False)
