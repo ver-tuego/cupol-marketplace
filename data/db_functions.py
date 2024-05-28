@@ -6,6 +6,7 @@ from data.user import User
 from data.buyer import Buyer
 from data.seller import Seller
 from data.admin import Admin
+from data.emails import Emails
 
 
 def new_product(seller_id, name, description, price, quantity):
@@ -104,3 +105,12 @@ def new_admin(name, surname, email, password, gender, age, is_boss):
     session.add(admin)
     session.commit()
     return admin
+
+
+def new_email(email_):
+    session = db_session.create_session()
+    email = Emails()
+    email.email = email_
+    session.add(email)
+    session.commit()
+    return email

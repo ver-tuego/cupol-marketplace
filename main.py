@@ -324,6 +324,45 @@ def product(product_id):
     return render_template('product.html', **params)
 
 
+@app.route('/product/<product_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_account():
+    form = EditForm()
+    if request.method == "GET":
+        user = current_user.get_user()
+        form.name.data = user.name
+        form.surname.data = user.surname
+        form.email.data = user.email
+        form.password.data = user.password
+        form.gender.data = user.gender
+        form.age.data = user.age
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('edit.html', title='Изменение аккаунта',
+                                   form=form,
+                                   message="Пароли не совпадают")
+        if not 14 < form.age.data < 200:
+            return render_template('edit.html', title='Изменение аккаунта',
+                                   form=form,
+                                   message="Недопустимый возраст")
+        db_sess = db_session.create_session()
+        user = current_user.get_user(db_sess)
+        user.name = form.name.data
+        user.surname = form.surname.data
+        user.email = form.email.data
+        user.set_password(form.password.data)
+        user.gender = form.gender.data
+        user.age = form.age.data
+        user_ = db_sess.query(User).get(current_user.id)
+        user_.email = form.email.data
+        db_sess.commit()
+        return redirect('/account')
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css'),
+    }
+    return render_template('edit.html', title='Изменение аккаунта', form=form, **params)
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -412,7 +451,7 @@ def edit_account():
                                    form=form,
                                    message="Недопустимый возраст")
         db_sess = db_session.create_session()
-        user = current_user.get_user()
+        user = current_user.get_user(db_sess)
         user.name = form.name.data
         user.surname = form.surname.data
         user.email = form.email.data
@@ -546,7 +585,6 @@ def give_buyer(id):
 
 @app.route('/get_seller_products', methods=['GET'])
 def get_seller_products():
-    current_user = flask_login.current_user
     user_id = current_user.id
     products = []
     db_sess = db_session.create_session()
