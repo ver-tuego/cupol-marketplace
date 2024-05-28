@@ -43,6 +43,7 @@ def about_us():
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     email = request.form.get('email')
+    print(email)
     return jsonify({'message': 'Вы успешно подписались!'}), 200
 
 
@@ -295,7 +296,6 @@ def product(product_id):
     db_sess = db_session.create_session()
     reviews = db_sess.query(Review).filter(Review.product_id == product_id).all()
     product = db_sess.query(Product).filter(Product.id == product_id).first()
-    print(product.seller_id)
     seller = db_sess.query(Seller).filter(Seller.id == product.seller_id).first()
     reviews_info = []
     for i in reviews:
@@ -377,7 +377,16 @@ def login():
 @app.route('/account')
 def account():
     user = current_user.get_user()
-    return render_template('account.html', user=user)
+    rating = 0.0
+    if current_user.type == "seller":
+        db_sess = db_session.create_session()
+        all_products = db_sess.query(Product).filter(Product.seller_id == current_user.id).all()
+        rating = count_average(all_products)
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css'),
+        'rating': rating
+    }
+    return render_template('account.html', user=user, **params)
 
 
 @app.route('/account/edit', methods=['GET', 'POST'])
@@ -413,7 +422,10 @@ def edit_account():
         user_.email = form.email.data
         db_sess.commit()
         return redirect('/account')
-    return render_template('edit.html', title='Изменение аккаунта', form=form)
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css'),
+    }
+    return render_template('edit.html', title='Изменение аккаунта', form=form, **params)
 
 
 @app.route('/account/delete')
@@ -529,6 +541,25 @@ def give_buyer(id):
     user.type = "buyer"
     db_sess.commit()
     return redirect('/admin/list_of_admins')
+
+
+@app.route('/get_seller_products', methods=['GET'])
+def get_seller_products():
+    current_user = flask_login.current_user
+    user_id = current_user.id
+    products = []
+    db_sess = db_session.create_session()
+    all_products = db_sess.query(Product).filter(Product.seller_id == user_id).all()
+    for el in all_products:
+        product_data = {}
+        product_data['id'] = el.id
+        product_data['name'] = el.name
+        product_data['price'] = el.price
+        product_data['image'] = get_photos_from_id(el.id, 'products')[0]
+        product_data['quantity'] = el.quantity
+        product_data['rating'] = el.rating
+        products.append(product_data)
+    return jsonify(products)
 
 
 db_session.global_init("db/db.db")

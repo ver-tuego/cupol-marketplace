@@ -19,7 +19,11 @@
     {% if current_user.is_authenticated %}
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a class="nav-link custom-cart-btn" href="/cart">Корзина</a>
+          {% if current_user.type == "seller" %}
+            <a class="nav-link custom-cart-btn" href="/add_product">Добавить товар</a>
+          {% else %}
+            <a class="nav-link custom-cart-btn" href="/cart">Корзина</a>
+          {% endif %}
         </li>
         <li class="nav-item">
           <a class="nav-link custom-account-btn" href="/account">{{ current_user.get_user().name }} {{ current_user.get_user().surname }}</a>

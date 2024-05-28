@@ -146,6 +146,9 @@ footer {
 .product-container {
     max-height: 300px; /* Задаем высоту контейнера */
     overflow-y: auto; /* Добавляем вертикальную прокрутку */
+    background-color: #f8f9fa; /* Чтобы контейнеры выглядели одинаково */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .product-item {
     border: 1px solid #ccc; /* Рамка для товаров */
@@ -158,4 +161,10 @@ footer {
 .btn-animated:active {
     transform: scale(0.95);
     transition: transform 0.1s ease;
+}
+
+.payment-container{
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
