@@ -12,6 +12,7 @@ from data.buyer import Buyer
 from data.seller import Seller
 from data.basket import Basket
 from data.admin import Admin
+from data.emails import Emails
 from forms.register import RegisterForm
 from forms.login import LoginForm
 from forms.edit import EditForm
