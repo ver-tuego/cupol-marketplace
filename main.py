@@ -2,6 +2,7 @@ import os
 
 import flask_login
 import requests
+import shutil
 from sqlalchemy import and_
 from flask import Flask, render_template, redirect, url_for, jsonify, request
 from data import db_session
@@ -24,7 +25,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
-tokens = []
 
 
 @login_manager.user_loader
@@ -206,6 +206,28 @@ def add_product():
     return render_template('add_product.html', **params)
 
 
+@app.route('/product/<product_id>/delete', methods=['GET', 'POST'])
+def delete_product(product_id):
+    db_sess = db_session.create_session()
+    product = db_sess.query(Product).get(product_id)
+    db_sess.delete(product)
+    shutil.rmtree(f"./static/photos/products/{product_id}")
+
+    reviews = db_sess.query(Review).filter(Review.product_id == product_id).all()
+    for i in reviews:
+        try:
+            shutil.rmtree(f"./static/photos/reviews/{i.id}")
+        except Exception as err:
+            pass
+        db_sess.delete(i)
+
+    basket = db_sess.query(Basket).filter(Basket.product_id == product_id).all()
+    for i in basket:
+        db_sess.delete(i)
+    db_sess.commit()
+    return redirect('/account')
+
+
 @login_required
 @app.route('/submit-product', methods=['POST'])
 def submit_product():
@@ -328,45 +350,6 @@ def product(product_id):
     return render_template('product.html', **params)
 
 
-@app.route('/product/<product_id>/edit', methods=['GET', 'POST'])
-@login_required
-def edit_product():
-    form = EditForm()
-    if request.method == "GET":
-        user = current_user.get_user()
-        form.name.data = user.name
-        form.surname.data = user.surname
-        form.email.data = user.email
-        form.password.data = user.password
-        form.gender.data = user.gender
-        form.age.data = user.age
-    if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            return render_template('edit.html', title='Изменение аккаунта',
-                                   form=form,
-                                   message="Пароли не совпадают")
-        if not 14 < form.age.data < 200:
-            return render_template('edit.html', title='Изменение аккаунта',
-                                   form=form,
-                                   message="Недопустимый возраст")
-        db_sess = db_session.create_session()
-        user = current_user.get_user(db_sess)
-        user.name = form.name.data
-        user.surname = form.surname.data
-        user.email = form.email.data
-        user.set_password(form.password.data)
-        user.gender = form.gender.data
-        user.age = form.age.data
-        user_ = db_sess.query(User).get(current_user.id)
-        user_.email = form.email.data
-        db_sess.commit()
-        return redirect('/account')
-    params = {
-        'css_style': url_for('static', filename='css/main_page.css'),
-    }
-    return render_template('edit.html', title='Изменение аккаунта', form=form, **params)
-
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -477,6 +460,10 @@ def edit_account():
 def delete_account():
     db_sess = db_session.create_session()
     user = db_sess.query(User).get(current_user.id)
+    if user.type == "seller":
+        all_products = db_sess.query(Product).filter(Product.seller_id == current_user.id).all()
+        for i in all_products:
+            delete_product(i.id)
     user_ = user.get_user(db_sess)
     db_sess.delete(user)
     db_sess.delete(user_)
@@ -520,6 +507,10 @@ def delete_account_for_admin(id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).get(id)
     type = user.type
+    if type == "seller":
+        all_products = db_sess.query(Product).filter(Product.seller_id == id).all()
+        for i in all_products:
+            delete_product(i.id)
     user_ = user.get_user(db_sess)
     db_sess.add(user_)
     db_sess.delete(user)
@@ -604,6 +595,7 @@ def get_seller_products():
         products.append(product_data)
     return jsonify(products)
 
+
 '''
 @app.route('/verify/<hash>')
 def verify(hash):
@@ -626,8 +618,8 @@ def verify(hash):
 '''
 
 db_session.global_init("db/db.db")
-'''
 
+'''
 new_product(2, "Сармат", "Настоящий", 999999999999.99, 1)
 
 new_review(1, 1, 5, "Реально настоящий")
@@ -640,6 +632,7 @@ new_admin("Дмитрий", "Кривошея", "krivosheya_da@mail.ru", "030920
 new_admin("Сармат", "Сакиев", "sarmat@mail.ru", "hard_password", "male", 16, True)
 new_admin("Матвей", "Верташов", "matvey@mail.ru", "123", "male", 16, True)
 '''
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port='3555', debug=False)
