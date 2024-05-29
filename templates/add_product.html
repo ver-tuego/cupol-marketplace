@@ -1,51 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if is_not_seller %}
-  <style>
-      footer {
-          position: fixed;
-          bottom: 0;
-          width: 100%;
-          height: 250px;
-      }
-  </style>
-  <div class="container">
-    <h2 class="mt-4 mb-4">Вы не продавец</h2>
-  </div>
-{% elif current_user.is_authenticated %}
-  <div class="container">
-    <h2 class="mt-4 mb-4">Добавление нового товара</h2>
-
-    <form action="/submit-product" method="post" enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="product_name">Название товара:</label>
-        <input type="text" maxlength="30" class="form-control" id="product_name" name="product_name" required>
-      </div>
-      <div class="form-group">
-        <label for="product_price">Цена товара:</label>
-        <input type="number" class="form-control" id="product_price" name="product_price" min="1" required>
-      </div>
-      <div class="form-group">
-        <label for="product_quanity">Количество на складе:</label>
-        <input type="number" class="form-control" id="product_quanity" name="product_quanity" min="1" required>
-      </div>
-      <div class="form-group">
-        <label for="product_description">Описание товара:</label>
-        <textarea class="form-control" maxlength="450" id="product_description" name="product_description" rows="4" required></textarea>
-      </div>
-      <div class="form-group">
-        <label for="product_images">Фотографии товара:</label>
-        <input type="file" class="form-control-file" id="product_images" name="product_images" accept=".png,.jpg,.bmp,.jpeg" multiple required>
-      </div>
-      <button type="submit" class="btn btn-outline-dark btn-animated">Добавить товар</button>
+<div class="container">
+    <h1 align="center">Добавление нового товара</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.name.label }}<br>
+            {{ form.name(class="form-control") }}<br>
+            {% for error in form.name.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.price.label }}<br>
+            {{ form.price(class="form-control") }}<br>
+            {% for error in form.price.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.quantity.label }}<br>
+            {{ form.quantity(class="form-control") }}<br>
+            {% for error in form.quantity.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.description.label }}<br>
+            {{ form.description(class="form-control") }}<br>
+            {% for error in form.description.errors %}
+                <p class="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit(type="submit", class="btn btn btn-animated btn-outline-dark") }}</p>
+        <p class="alert alert-danger">{{message}}</p>
     </form>
-  </div>
-
-
-{% else %}
-  <div class="container">
-      <h2 class="mt-4 mb-4">Вы не авторизованы</h2>
-  </div>
-{% endif %}
+</div>
 {% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 align="center">Добавьте фото</h1>
+    <form class="login_form" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="photo">Добавьте фото товара:</label>
+            <input type="file" class="form-control-file" id="photo" name="photo">
+        </div>
+        <button type="submit" class="btn btn btn-animated btn-outline-dark">Добавить</button>
+    </form>
+    <form action="" method="post">
+        <p>{{ form.submit(type="submit", class="btn btn btn-animated btn-outline-dark") }}</p>
+    </form>
+    <p class="alert alert-danger">{{message}}</p>
+</div>
+{% endblock %}

@@ -22,7 +22,7 @@
                     {% if current_user.type == "buyer" %}
                         <a class="nav-link custom-cart-btn" href="/cart">Корзина</a>
                     {% elif current_user.type == "seller" %}
-                        <a class="nav-link custom-cart-btn" href="/add_product">Добавить товар</a>
+                        <a class="nav-link custom-cart-btn" href="/add_product/start">Добавить товар</a>
                     {% elif current_user.type == "admin" %}
                         <a class="nav-link custom-cart-btn" href="/admin">Модерация</a>
                     {% endif %}

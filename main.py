@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 
 import flask_login
 import requests
@@ -17,6 +18,7 @@ from data.emails import Emails
 from forms.register import RegisterForm
 from forms.login import LoginForm
 from forms.edit import EditForm
+from forms.product import ProductForm, SubmitForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review, new_basket, new_email
 from tools import *
@@ -185,25 +187,110 @@ def submit_review():
     return redirect('/')
 
 
-@login_required
-@app.route('/add_product')
-def add_product():
-    try:
-        seller_id = current_user.id
-    except Exception:
-        params = {
-            'is_not_seller': True,
-            'css_style': url_for('static', filename='css/main_page.css')
-        }
-        return render_template('add_product.html', **params)
+@app.route('/product/<product_id>')
+def product(product_id):
     db_sess = db_session.create_session()
-    sellers_ids = db_sess.query(Seller).all()
-    sellers_ids = [seller.id for seller in sellers_ids]
+    reviews = db_sess.query(Review).filter(Review.product_id == product_id).all()
+    product = db_sess.query(Product).filter(Product.id == product_id).first()
+    seller = db_sess.query(Seller).filter(Seller.id == product.seller_id).first()
+    reviews_info = []
+    for i in reviews:
+        try:
+            user = (f"{db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().name} "
+                    f"{db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().surname}")
+        except Exception as err:
+            user = "DELETED"
+        reviews_info.append(
+            {
+                'username': user,
+                'rating': i.rating,
+                'text': i.text,
+                'photos': get_photos_from_id(i.id, 'reviews')
+             })
+
     params = {
-        'is_not_buyer': seller_id not in sellers_ids,
+        'css_style': url_for('static', filename='css/main_page.css'),
+        'reviews': reviews_info,
+        'product': {
+            'id': product_id, 'name': product.name, 'seller_name': seller.name,
+            'description': product.description,
+            'price': product.price,
+            'rating': product.rating,
+            "quantity": product.quantity,
+            'photos': get_photos_from_id(product_id, 'products')
+        }
+    }
+    return render_template('product.html', **params)
+
+
+@app.route('/add_product/start', methods=['GET', "POST"])
+def add_product():
+    form = ProductForm()
+    params = {
         'css_style': url_for('static', filename='css/main_page.css')
     }
-    return render_template('add_product.html', **params)
+    if form.validate_on_submit():
+        if form.price.data == 0:
+            return render_template(
+                'add_product.html',
+                form=form,
+                message="Цена товара не может быть равна нулю",
+                **params
+            )
+        elif form.price.data < 0:
+            return render_template(
+                'add_product.html',
+                form=form,
+                message="Цена товара не может быть отрицательной",
+                **params
+            )
+        elif form.quantity.data < 0:
+            return render_template(
+                'add_product.html',
+                form=form,
+                message="Количество товаров на складе не может быть отрицательным",
+                **params
+            )
+        db_sess = db_session.create_session()
+        product = new_product(
+            current_user.id,
+            form.name.data,
+            form.description.data,
+            form.price.data,
+            form.quantity.data
+        )
+        db_sess.add(product)
+        return redirect(f'/add_product/{product.id}')
+    return render_template('add_product.html', form=form, **params)
+
+
+@app.route('/add_product/<int:product_id>', methods=['GET', "POST"])
+def add_product_photo(product_id):
+    form = SubmitForm()
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css')
+    }
+    if request.method == "POST":
+
+        if form.submit.data:
+            if len(os.listdir(f"./static/photos/products/{product_id}")) > 0:
+                return redirect("/")
+            else:
+                return render_template(
+                    'add_product_photo.html',
+                    form=form,
+                    message="Необходимо добавить как минимум одно фото",
+                    **params
+                )
+        else:
+            try:
+                os.mkdir(f"./static/photos/products/{product_id}")
+            except Exception as err:
+                pass
+            f = request.files['photo']
+            s = f.filename
+            Image.open(f).save(os.path.join(f"./static/photos/products/{product_id}", s))
+    return render_template('add_product_photo.html', form=form, **params)
 
 
 @app.route('/product/<product_id>/delete', methods=['GET', 'POST'])
@@ -318,38 +405,6 @@ def search_result(query):
     return render_template('search.html', **params)
 
 
-@app.route('/product/<product_id>')
-def product(product_id):
-    db_sess = db_session.create_session()
-    reviews = db_sess.query(Review).filter(Review.product_id == product_id).all()
-    product = db_sess.query(Product).filter(Product.id == product_id).first()
-    seller = db_sess.query(Seller).filter(Seller.id == product.seller_id).first()
-    reviews_info = []
-    for i in reviews:
-        try:
-            user = (f"{db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().name} "
-                    f"{db_sess.query(Buyer).filter(Buyer.id == i.buyer_id).first().surname}")
-        except Exception as err:
-            user = "DELETED"
-        reviews_info.append(
-            {'username': user,
-             'rating': i.rating,
-             'text': i.text,
-             'photos': get_photos_from_id(i.id, 'reviews')
-             })
-
-    params = {
-        'css_style': url_for('static', filename='css/main_page.css'),
-        'reviews': reviews_info,
-        'product': {'id': product_id, 'name': product.name, 'seller_name': seller.name,
-                    'description': product.description,
-                    'price': product.price,
-                    'rating': product.rating,
-                    'photos': get_photos_from_id(product_id, 'products')}
-    }
-    return render_template('product.html', **params)
-
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -408,7 +463,8 @@ def account():
     if current_user.type == "seller":
         db_sess = db_session.create_session()
         all_products = db_sess.query(Product).filter(Product.seller_id == current_user.id).all()
-        rating = count_average(all_products)
+        if len(all_products) != 0:
+            rating = count_average(all_products)
     params = {
         'css_style': url_for('static', filename='css/main_page.css'),
         'rating': rating
