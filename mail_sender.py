@@ -1,4 +1,6 @@
 import smtplib
+from data import db_session
+from data.emails import Emails
 from email.mime.text import MIMEText
 from email.header import Header
 
@@ -22,10 +24,15 @@ def send_email(emails, message, password, subject=None):
 
 
 def main():
+    db_session.global_init("db/db.db")
+    db_sess = db_session.create_session()
+    emails = db_sess.query(Emails).all()
+    emails = set([i.email for i in emails])
     password = input("Введите пароль от корпоративной почты: ")
     message = input("Введите сообщение: ")
     subject = input("Введите тему сообщения, если она есть: ")
-    print(send_email(["cupolmarketplace@yandex.ru"], message, password, subject))
+    print(emails)
+    print(send_email(emails, message, password, subject))
 
 
 if __name__ == "__main__":

@@ -82,7 +82,22 @@
       </a>
     </div>
   {% endif %}
+
 </div>
+<div class="toast-container" id="toastContainer">
+    <div class="toast" id="dynamicToast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="mr-auto" id="toastTitle">Уведомление</strong>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body" id="toastBody">
+            Текст уведомления
+        </div>
+    </div>
+</div>
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

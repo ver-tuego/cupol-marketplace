@@ -17,7 +17,7 @@ from forms.register import RegisterForm
 from forms.login import LoginForm
 from forms.edit import EditForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review, new_basket
+from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review, new_basket, new_email
 from tools import *
 
 app = Flask(__name__)
@@ -44,7 +44,7 @@ def about_us():
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     email = request.form.get('email')
-    print(email)
+    new_email(email)
     return jsonify({'message': 'Вы успешно подписались!'}), 200
 
 
@@ -97,27 +97,31 @@ def process_payment():
 @app.route('/basket_add', methods=['POST'])
 def basket_add():
     try:
-        product_id = request.form['product']
+        product_id = request.get_json()['product']
         user_id = current_user.id
         db_sess = db_session.create_session()
-
         data = db_sess.query(Basket).all()
+        sellers = db_sess.query(Seller).all()
+        if user_id in [seller.id for seller in sellers]:
+            return jsonify({'success': "0"})
         users_ids = [usr.buyer_id for usr in data]
         products_ids = [prd.product_id if prd.buyer_id == user_id else None for prd in data]
         product_to_by = db_sess.query(Product).filter(Product.id == product_id).first()
         if int(user_id) in users_ids and int(product_id) in products_ids:
             db_basket_product = db_sess.query(Basket).filter(
                 and_(Basket.product_id == product_id, Basket.buyer_id == user_id)).first()
+            if db_basket_product.quantity == product_to_by.quantity:
+                return jsonify({'success': "3"})
             db_basket_product.quantity = min(db_basket_product.quantity + 1, product_to_by.quantity)
             db_sess.commit()
         else:
             if product_to_by.quantity == 0:
-                return jsonify({'message': 'Продукта нет на складе'}), 400
+                return jsonify({'success': "2"})
             new_basket(user_id, product_id, 1)
-        return jsonify({'message': 'Данные успешно обновлены!'}), 200
+        return jsonify({'success': "1"})
     except Exception as ex:
         print(ex)
-        return jsonify({'error': str(ex)}), 500
+        return jsonify({'success': False})
 
 
 @login_required
@@ -326,7 +330,7 @@ def product(product_id):
 
 @app.route('/product/<product_id>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_account():
+def edit_product():
     form = EditForm()
     if request.method == "GET":
         user = current_user.get_user()
@@ -600,6 +604,26 @@ def get_seller_products():
         products.append(product_data)
     return jsonify(products)
 
+'''
+@app.route('/verify/<hash>')
+def verify(hash):
+    try:
+        current_user = flask_login.current_user
+        id = current_user.id
+        print(id)
+
+        is_hash = get_hash(hash)
+        if is_hash is None:
+            return "найс трай лох", 418
+        else:
+            if get_account(id_site=id) is not None:
+                return "У вас уже есть привязанный аккаунт", 418
+            else:
+                activate_hash(hash, id)
+                return "Успешная привязка", 200
+    except Exception as e:
+        return "Ты не авторизован", 401
+'''
 
 db_session.global_init("db/db.db")
 '''

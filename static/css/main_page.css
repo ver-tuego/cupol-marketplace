@@ -168,3 +168,16 @@ footer {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1100;
+    pointer-events: none;
+}
+.toast {
+    width: 300px;
+    transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+    pointer-events: auto;
+}
