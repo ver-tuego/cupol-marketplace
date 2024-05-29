@@ -478,6 +478,11 @@ def leave_account():
     return redirect('/')
 
 
+@app.route('/admin')
+def admin():
+    return render_template("admin.html")
+
+
 @app.route('/admin/list_of_buyers')
 def list_of_buyers():
     db_sess = db_session.create_session()

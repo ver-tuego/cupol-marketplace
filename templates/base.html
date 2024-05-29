@@ -1,41 +1,43 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Магазин</title>
-  <link rel="stylesheet" href="{{ css_style }}"> <!-- Подключаем файл стилей -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Подключаем Bootstrap CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cupol's Marketplace</title>
+    <link rel="stylesheet" href="{{ css_style }}"> <!-- Подключаем файл стилей -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> <!-- Подключаем Bootstrap CSS -->
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container">
-    <a class="navbar-brand" href="/">Cupol`s marketplace</a>
-    <form class="form-inline mx-auto">
-      <input class="form-control mr-sm-2" type="search" id="searchQuery" placeholder="Поиск" aria-label="Search">
-      <button class="btn btn-outline-dark my-2 my-sm-0 btn-animated" type="submit" onclick="search(event)">Поиск</button>
-    </form>
-    {% if current_user.is_authenticated %}
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-          {% if current_user.type == "seller" %}
-            <a class="nav-link custom-cart-btn" href="/add_product">Добавить товар</a>
-          {% else %}
-            <a class="nav-link custom-cart-btn" href="/cart">Корзина</a>
-          {% endif %}
-        </li>
-        <li class="nav-item">
-          <a class="nav-link custom-account-btn" href="/account">{{ current_user.get_user().name }} {{ current_user.get_user().surname }}</a>
-        </li>
-      </ul>
-    {% else %}
-      <p>
-          <a class="btn btn btn-outline-dark btn-animated" href="/register">Зарегистрироваться</a>
-          <a class="btn btn btn-outline-dark btn-animated" href="/login">Войти</a>
-      </p>
-    {% endif %}
-  </div>
+    <div class="container">
+        <a class="navbar-brand" href="/">Cupol`s marketplace</a>
+        <form class="form-inline mx-auto">
+            <input class="form-control mr-sm-2" type="search" id="searchQuery" placeholder="Поиск" aria-label="Search">
+            <button class="btn btn-outline-dark my-2 my-sm-0 btn-animated" type="submit" onclick="search(event)">Поиск</button>
+        </form>
+        {% if current_user.is_authenticated %}
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    {% if current_user.type == "buyer" %}
+                        <a class="nav-link custom-cart-btn" href="/cart">Корзина</a>
+                    {% elif current_user.type == "seller" %}
+                        <a class="nav-link custom-cart-btn" href="/add_product">Добавить товар</a>
+                    {% elif current_user.type == "admin" %}
+                        <a class="nav-link custom-cart-btn" href="/admin">Модерация</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link custom-account-btn" href="/account">{{ current_user.get_user().name }} {{ current_user.get_user().surname }}</a>
+                </li>
+            </ul>
+        {% else %}
+            <p>
+                <a class="btn btn btn-outline-dark btn-animated" href="/register">Зарегистрироваться</a>
+                <a class="btn btn btn-outline-dark btn-animated" href="/login">Войти</a>
+            </p>
+        {% endif %}
+    </div>
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.10/SmoothScroll.min.js" integrity="sha256-huW7yWl7tNfP7lGk46XE+Sp0nCotjzYodhVKlwaNeco=" crossorigin="anonymous"></script>
