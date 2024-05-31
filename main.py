@@ -1,4 +1,5 @@
 import os
+import json
 from PIL import Image
 
 import flask_login
@@ -18,7 +19,7 @@ from data.emails import Emails
 from forms.register import RegisterForm
 from forms.login import LoginForm
 from forms.edit import EditForm
-from forms.product import ProductForm, SubmitForm
+from forms.product import ProductForm, AddProductForm, AddPhotoForm, DeletePhotoForm
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from data.db_functions import new_buyer, new_seller, new_admin, new_product, new_review, new_basket, new_email
 from tools import *
@@ -212,7 +213,9 @@ def product(product_id):
         'css_style': url_for('static', filename='css/main_page.css'),
         'reviews': reviews_info,
         'product': {
-            'id': product_id, 'name': product.name, 'seller_name': seller.name,
+            'id': product_id,
+            'name': product.name,
+            'seller': seller,
             'description': product.description,
             'price': product.price,
             'rating': product.rating,
@@ -266,31 +269,60 @@ def add_product():
 
 @app.route('/add_product/<int:product_id>', methods=['GET', "POST"])
 def add_product_photo(product_id):
-    form = SubmitForm()
+    form1 = AddProductForm()
+    form2 = AddPhotoForm()
+    form3 = DeletePhotoForm()
     params = {
         'css_style': url_for('static', filename='css/main_page.css')
     }
+    photos = []
     if request.method == "POST":
-
-        if form.submit.data:
-            if len(os.listdir(f"./static/photos/products/{product_id}")) > 0:
+        if form1.submit1.data:
+            if len(get_photos_from_id(product_id, "products")) > 0:
                 return redirect("/")
             else:
                 return render_template(
                     'add_product_photo.html',
-                    form=form,
+                    form1=form1,
+                    form2=form2,
+                    form3=form3,
+                    photos=photos,
+                    len_=len(photos),
+                    product_id=product_id,
                     message="Необходимо добавить как минимум одно фото",
                     **params
                 )
-        else:
+        elif form2.submit2.data:
             try:
                 os.mkdir(f"./static/photos/products/{product_id}")
             except Exception as err:
                 pass
             f = request.files['photo']
-            s = f.filename
-            Image.open(f).save(os.path.join(f"./static/photos/products/{product_id}", s))
-    return render_template('add_product_photo.html', form=form, **params)
+            if f:
+                s = f.filename
+                Image.open(f).save(os.path.join(f"./static/photos/products/{product_id}", s))
+        else:
+            active = request.get_json()["value"]
+            try:
+                os.remove(get_photos_from_id(product_id, "products")[active])
+            except Exception as err:
+                pass
+            return redirect(f"/add_product/{product_id}", code=200)
+    try:
+        photos = get_photos_from_id(product_id, "products")
+    except Exception as err:
+        pass
+    print(photos)
+    return render_template(
+        'add_product_photo.html',
+        form1=form1,
+        form2=form2,
+        form3=form3,
+        photos=photos,
+        len_=len(photos),
+        product_id=product_id,
+        **params
+    )
 
 
 @app.route('/product/<product_id>/delete', methods=['GET', 'POST'])
@@ -298,7 +330,10 @@ def delete_product(product_id):
     db_sess = db_session.create_session()
     product = db_sess.query(Product).get(product_id)
     db_sess.delete(product)
-    shutil.rmtree(f"./static/photos/products/{product_id}")
+    try:
+        shutil.rmtree(f"./static/photos/products/{product_id}")
+    except Exception as err:
+        pass
 
     reviews = db_sess.query(Review).filter(Review.product_id == product_id).all()
     for i in reviews:
@@ -313,6 +348,47 @@ def delete_product(product_id):
         db_sess.delete(i)
     db_sess.commit()
     return redirect('/account')
+
+
+@app.route('/product/<product_id>/edit', methods=['GET', 'POST'])
+def edit_product():
+    form = ProductForm()
+    params = {
+        'css_style': url_for('static', filename='css/main_page.css')
+    }
+    if form.validate_on_submit():
+        if form.price.data == 0:
+            return render_template(
+                'add_product.html',
+                form=form,
+                message="Цена товара не может быть равна нулю",
+                **params
+            )
+        elif form.price.data < 0:
+            return render_template(
+                'add_product.html',
+                form=form,
+                message="Цена товара не может быть отрицательной",
+                **params
+            )
+        elif form.quantity.data < 0:
+            return render_template(
+                'add_product.html',
+                form=form,
+                message="Количество товаров на складе не может быть отрицательным",
+                **params
+            )
+        db_sess = db_session.create_session()
+        product = new_product(
+            current_user.id,
+            form.name.data,
+            form.description.data,
+            form.price.data,
+            form.quantity.data
+        )
+        db_sess.add(product)
+        return redirect(f'/add_product/{product.id}')
+    return render_template('add_product.html', form=form, **params)
 
 
 @login_required
