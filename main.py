@@ -350,12 +350,19 @@ def delete_product(product_id):
     return redirect('/account')
 
 
-@app.route('/product/<product_id>/edit', methods=['GET', 'POST'])
-def edit_product():
+@app.route('/product/<product_id>/edit/start', methods=['GET', 'POST'])
+def edit_product(product_id):
     form = ProductForm()
     params = {
         'css_style': url_for('static', filename='css/main_page.css')
     }
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        product = db_sess.query(Product).get(product_id)
+        form.name.data = product.name
+        form.price.data = product.price
+        form.quantity.data = product.quantity
+        form.description.data = product.description
     if form.validate_on_submit():
         if form.price.data == 0:
             return render_template(
@@ -379,15 +386,14 @@ def edit_product():
                 **params
             )
         db_sess = db_session.create_session()
-        product = new_product(
-            current_user.id,
-            form.name.data,
-            form.description.data,
-            form.price.data,
-            form.quantity.data
-        )
+        product = db_sess.query(Product).get(product_id)
         db_sess.add(product)
-        return redirect(f'/add_product/{product.id}')
+        product.name = form.name.data
+        product.price = form.price.data
+        product.quantity = form.quantity.data
+        product.description = form.description.data
+        db_sess.commit()
+        return redirect(f'/add_product/{product_id}')
     return render_template('add_product.html', form=form, **params)
 
 

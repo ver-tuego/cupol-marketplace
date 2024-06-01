@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <p class="mb-0">Количество на складе: ${product.quantity}</p>
                         <p class="mb-0">Рейтинг: ${product.rating}★</p>
                         <div class="btn-group">
-                            <a class="btn btn btn-outline-dark btn-animated" href="/product/${product.id}/edit">Изменить</a>
+                            <a class="btn btn btn-outline-dark btn-animated" href="/product/${product.id}/edit/start">Изменить</a>
                             <a class="btn btn btn-outline-dark btn-animated" href="/product/${product.id}/delete">Удалить</a>
                         </div>
                     </div>
